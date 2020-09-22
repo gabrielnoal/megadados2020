@@ -2,8 +2,8 @@ import uuid
 
 from fastapi.testclient import TestClient
 
-from main import app, Task
-from utils import *
+from .main import app
+from .utils import *
 client = TestClient(app)
 
 
@@ -81,8 +81,6 @@ def test_read_tasks_with_multiples_mocks_task():
     response = client.get('/task')
     assert response.status_code == 200
     response_json = response.json()
-    print(f'\nresponse_json_key: {len(response_json.keys())}')
-    print(f'\nmock_uuid_list: {len(mock_uuid_list)}')
     assert response_json == response_mock
     delete_mock(mock_uuid_list)
 

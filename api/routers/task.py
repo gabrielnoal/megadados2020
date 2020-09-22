@@ -1,65 +1,15 @@
-
 import uuid
 
 from typing import Optional, Dict
 
-from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel, Field, Extra
+from fastapi import HTTPException, Depends, APIRouter
+from ..database import DBSession, get_db
+from ..models import Task
 
+router = APIRouter()
 
-# pylint: disable=too-few-public-methods
-class Task(BaseModel):
-    description: Optional[str] = Field(
-        'no description',
-        title='Task description',
-        max_length=1024,
-    )
-    completed: Optional[bool] = Field(
-        False,
-        title='Shows whether the task was completed',
-    )
-
-    class Config:
-        extra = Extra.forbid
-        schema_extra = {
-            'example': {
-                'description': 'Buy baby diapers',
-                'completed': False,
-            }
-        }
-
-
-tags_metadata = [
-    {
-        'name': 'task',
-        'description': 'Operations related to tasks.',
-    },
-]
-
-app = FastAPI(
-    title='Task list',
-    description='Task-list project for the **Megadados** course',
-    openapi_tags=tags_metadata,
-)
-
-
-class DBSession:
-    tasks = {}
-
-    def __init__(self):
-        self.tasks = DBSession.tasks
-
-    def delete_task_by_id(self, task_id):
-        del self.tasks[task_id]
-
-
-def get_db():
-    return DBSession()
-
-
-@app.get(
-    '/task',
-    tags=['task'],
+@router.get(
+    '',
     summary='Reads task list',
     description='Reads the whole task list.',
     response_model=Dict[uuid.UUID, Task],
@@ -76,9 +26,8 @@ async def read_tasks(
     }
 
 
-@app.post(
-    '/task',
-    tags=['task'],
+@router.post(
+    '',
     summary='Creates a new task',
     description='Creates a new task and returns its UUID.',
     response_model=uuid.UUID,
@@ -94,9 +43,8 @@ async def create_task(
     return uuid_
 
 
-@app.get(
-    '/task/{uuid_}',
-    tags=['task'],
+@router.get(
+    '/{uuid_}',
     summary='Reads task',
     description='Reads task from UUID.',
     response_model=Task,
@@ -118,9 +66,8 @@ async def read_task(
         ) from exception
 
 
-@app.put(
-    '/task/{uuid_}',
-    tags=['task'],
+@router.put(
+    '/{uuid_}',
     summary='Replaces a task',
     description='Replaces a task identified by its UUID.',
 )
@@ -142,9 +89,8 @@ async def replace_task(
         ) from exception
 
 
-@app.patch(
-    '/task/{uuid_}',
-    tags=['task'],
+@router.patch(
+    '/{uuid_}',
     summary='Alters task',
     description='Alters a task identified by its UUID',
 )
@@ -163,9 +109,8 @@ async def alter_task(
         ) from exception
 
 
-@app.delete(
-    '/task/{uuid_}',
-    tags=['task'],
+@router.delete(
+    '/{uuid_}',
     summary='Deletes task',
     description='Deletes a task identified by its UUID',
 )
